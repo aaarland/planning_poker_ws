@@ -12,6 +12,7 @@ use warp::Filter;
 
 static NEXT_USER_ID: AtomicUsize = AtomicUsize::new(1);
 
+#[allow(dead_code)]
 struct User {
     id: usize,
     name: String,
@@ -93,8 +94,8 @@ async fn user_message(my_id: usize, msg: Message, users: &Users) {
         Some(mut user) => {
             user.name = user_msg.name.clone();
             user.room_name = user_msg.room_name.clone();
-            user.vote = user_msg.vote.clone();
-            user.is_owner = user_msg.is_owner.clone();
+            user.vote = user_msg.vote;
+            user.is_owner = user_msg.is_owner;
         }
         None => {
             eprintln!("error: user not found {}", my_id);
@@ -102,11 +103,9 @@ async fn user_message(my_id: usize, msg: Message, users: &Users) {
         }
     };
 
+    let clear_all = user_msg.clear_all;
 
-
-    let clear_all = user_msg.clear_all.clone();
-
-    if clear_all && user_msg.is_owner{
+    if clear_all && user_msg.is_owner {
         for user in users.write().await.values_mut() {
             user.vote = None;
         }
@@ -120,9 +119,9 @@ async fn user_message(my_id: usize, msg: Message, users: &Users) {
         .map(|user| UserMessage {
             name: user.name.clone(),
             room_name: user.room_name.clone(),
-            vote: user.vote.clone(),
-            is_owner: user.is_owner.clone(),
-            clear_all: user_msg.clear_all.clone(),
+            vote: user.vote,
+            is_owner: user.is_owner,
+            clear_all: user_msg.clear_all,
         })
         .collect();
 
